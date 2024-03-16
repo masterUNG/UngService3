@@ -2,13 +2,38 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:ungservice/states/authen.dart';
+import 'package:ungservice/states/main_home.dart';
 
-void main() {
-  
+String initialRoute = '/authen';
+
+var getPages = <GetPage<dynamic>>[
+  GetPage(
+    name: '/authen',
+    page: () => const Authen(),
+  ),
+  GetPage(
+    name: '/mainHome',
+    page: () => const MainHome(),
+  ),
+];
+
+Future<void> main() async {
   HttpOverrides.global = MyHttpOverride();
 
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init().then((value) {
+    var result = GetStorage().read('user');
+    print('result main ---> $result');
+
+    if (result != null) {
+      initialRoute = '/mainHome';
+      runApp(const MyApp());
+    } else {
+      runApp(const MyApp());
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -17,7 +42,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      home: Authen(),
+      getPages: getPages,
+      initialRoute: initialRoute,
     );
   }
 }
